@@ -12,11 +12,10 @@ func TestGenerateReorderReport(t *testing.T) {
 
 	got, err := GenerateReorderReport(testItems)
 	wantItem := Item{SKU: "SKU-1", Name: "test-item-1", CurrentStock: 2, ReorderThreshold: 1}
-
 	want := []ReorderReport{
 		{Item: wantItem,
-			Shortfall:       1, //threshold - current stock
-			QuantityToOrder: 1},
+			Shortfall:       -1, //threshold - current stock
+			QuantityToOrder: 0},
 	}
 
 	if err != nil {

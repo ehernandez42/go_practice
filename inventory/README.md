@@ -32,7 +32,7 @@ As a store manager, I want an automated report that flags items running low on s
 
 ## Technical Notes
 
-- Language: Go (module `retail/inventory`)
+- Language: Go (module `/inventory`)
 - Suggested signatures (adjust if you have a better idea):
 
 ```go

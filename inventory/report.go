@@ -1,18 +1,16 @@
 package inventory
 
+import (
+	"cmp"
+	"slices"
+)
+
 type Item struct {
 	SKU              string
 	Name             string
 	CurrentStock     int
 	ReorderThreshold int
 }
-
-// // recommended order quantity calc: threshold * 2 - current stock
-// testReport := ReorderReport{
-// 	Item: testItem,
-// 	Shortfall: 1 //threshold - current stock
-// 	QuantityToOrder: 1
-// }
 
 type ReorderReport struct {
 	Item            Item
@@ -21,9 +19,23 @@ type ReorderReport struct {
 }
 
 func GenerateReorderReport(items []Item) ([]ReorderReport, error) {
-	res := []ReorderReport{
-		{Item: items[0], Shortfall: 0, QuantityToOrder: 0},
+	base := []ReorderReport{}
+
+	if len(items) == 0 {
+		return base, nil
 	}
 
-	return res, nil
+	for _, item := range items {
+		baseReport := ReorderReport{
+			Item: item}
+		baseReport.Shortfall = baseReport.Item.ReorderThreshold - baseReport.Item.CurrentStock
+		baseReport.QuantityToOrder = (baseReport.Item.ReorderThreshold * 2) - baseReport.Item.CurrentStock
+		base = append(base, baseReport)
+	}
+
+	slices.SortFunc(base, func(a, b ReorderReport) int {
+		return cmp.Compare(a.Shortfall, b.Shortfall)
+	})
+
+	return base, nil
 }
