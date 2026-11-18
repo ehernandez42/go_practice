@@ -5,17 +5,34 @@ import (
 	"testing"
 )
 
-func TestGenerateReorderReport(t *testing.T) {
+func TestGenerateReorderReportOverstock(t *testing.T) {
 	testItems := []Item{
 		{SKU: "SKU-1", Name: "test-item-1", CurrentStock: 2, ReorderThreshold: 1},
 	}
 
 	got, err := GenerateReorderReport(testItems)
-	wantItem := Item{SKU: "SKU-1", Name: "test-item-1", CurrentStock: 2, ReorderThreshold: 1}
+	want := []ReorderReport{}
+
+	if err != nil {
+		t.Errorf("runtime error: %q", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got: %+v, want: %+v", got, want)
+	}
+}
+func TestReorderReportDescending(t *testing.T) {
+	testItems := []Item{
+		{SKU: "SKU-1", Name: "test-item-1", CurrentStock: 1, ReorderThreshold: 3},
+		{SKU: "SKU-2", Name: "test-item-2", CurrentStock: 2, ReorderThreshold: 2},
+		{SKU: "SKU-3", Name: "test-item-3", CurrentStock: 3, ReorderThreshold: 7},
+	}
+
+	got, err := GenerateReorderReport(testItems)
 	want := []ReorderReport{
-		{Item: wantItem,
-			Shortfall:       -1, //threshold - current stock
-			QuantityToOrder: 0},
+		{Item: Item{SKU: "SKU-3", Name: "test-item-3", CurrentStock: 3, ReorderThreshold: 7}, Shortfall: 4, QuantityToOrder: 11},
+		{Item: Item{SKU: "SKU-1", Name: "test-item-1", CurrentStock: 1, ReorderThreshold: 3}, Shortfall: 2, QuantityToOrder: 5},
+		{Item: Item{SKU: "SKU-2", Name: "test-item-2", CurrentStock: 2, ReorderThreshold: 2}, Shortfall: 0, QuantityToOrder: 2},
 	}
 
 	if err != nil {
