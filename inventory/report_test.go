@@ -11,14 +11,13 @@ func TestGenerateReorderReportOverstock(t *testing.T) {
 	}
 
 	got, err := GenerateReorderReport(testItems)
-	want := []ReorderReport{}
 
 	if err != nil {
 		t.Errorf("runtime error: %q", err)
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got: %+v, want: %+v", got, want)
+	if len(got) != 0 {
+		t.Error("we're supposed to have an empty list")
 	}
 }
 func TestReorderReportDescending(t *testing.T) {
