@@ -2,6 +2,8 @@ package inventory
 
 import (
 	"cmp"
+	"errors"
+	"fmt"
 	"slices"
 )
 
@@ -18,8 +20,14 @@ type ReorderReport struct {
 	QuantityToOrder int
 }
 
+var badItems []Item
+
 func GenerateReorderReport(items []Item) ([]ReorderReport, error) {
-	base := []ReorderReport{}
+
+	var (
+		base     []ReorderReport
+		badItems []error
+	)
 
 	if len(items) == 0 {
 		return base, nil
@@ -27,6 +35,11 @@ func GenerateReorderReport(items []Item) ([]ReorderReport, error) {
 
 	for _, item := range items {
 		if item.CurrentStock <= item.ReorderThreshold {
+			if item.CurrentStock < 0 {
+				badItems = append(badItems, fmt.Errorf("%w: sku: %q (stock=%d, threshold=%d)",
+					"negative", item.SKU, item.CurrentStock, item.ReorderThreshold))
+				continue
+			}
 			baseReport := ReorderReport{
 				Item: item}
 			baseReport.Shortfall = baseReport.Item.ReorderThreshold - baseReport.Item.CurrentStock
@@ -35,8 +48,12 @@ func GenerateReorderReport(items []Item) ([]ReorderReport, error) {
 		}
 	}
 
+	if len(badItems) > 0 {
+		return nil, errors.Join(badItems...)
+	}
+
 	slices.SortFunc(base, func(a, b ReorderReport) int {
-		return cmp.Compare(b.Shortfall, a.Shortfall)
+		return cmp.Or(cmp.Compare(b.Shortfall, a.Shortfall), cmp.Compare(a.Item.SKU, b.Item.SKU))
 	})
 
 	return base, nil

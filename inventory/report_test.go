@@ -43,3 +43,35 @@ func TestReorderReportDescending(t *testing.T) {
 		t.Errorf("got: %+v, want: %+v", got, want)
 	}
 }
+
+func TestReorderReportNegativeStock(t *testing.T) {
+	testItems := []Item{
+		{SKU: "SKU-1", Name: "test-item-1", CurrentStock: -1, ReorderThreshold: 0},
+	}
+	_, err := GenerateReorderReport(testItems)
+
+	if err == nil {
+		t.Errorf("error must be present")
+	}
+}
+
+func TestReorderReportTieBreaker(t *testing.T) {
+	testItems := []Item{
+		{SKU: "SKU-2", Name: "test-item-2", CurrentStock: 1, ReorderThreshold: 3},
+		{SKU: "SKU-1", Name: "test-item-1", CurrentStock: 1, ReorderThreshold: 3},
+	}
+
+	got, err := GenerateReorderReport(testItems)
+	want := []ReorderReport{
+		{Item: Item{SKU: "SKU-1", Name: "test-item-1", CurrentStock: 1, ReorderThreshold: 3}, Shortfall: 2, QuantityToOrder: 5},
+		{Item: Item{SKU: "SKU-2", Name: "test-item-2", CurrentStock: 1, ReorderThreshold: 3}, Shortfall: 2, QuantityToOrder: 5},
+	}
+
+	if err != nil {
+		t.Errorf("runtime error: %q", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got: %+v, want: %+v", got, want)
+	}
+}
