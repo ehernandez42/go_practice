@@ -8,10 +8,11 @@ import (
 
 func TestGeneratedReorderReports(t *testing.T) {
 	tests := []struct {
-		name    string
-		items   []Item
-		want    []ReorderReport
-		wantErr error
+		name            string
+		items           []Item
+		want            []ReorderReport
+		wantErr         error
+		wantErrContains string
 	}{
 		{
 			name:  "empty input returns an empty ReorderReport",
@@ -60,7 +61,8 @@ func TestGeneratedReorderReports(t *testing.T) {
 				{SKU: "SKU-A", Name: "a", CurrentStock: 5, ReorderThreshold: -3},
 				{SKU: "SKU-B", Name: "b", CurrentStock: -1, ReorderThreshold: -5},
 			},
-			wantErr: ErrNegativeStock,
+			wantErr:         ErrNegativeStock,
+			wantErrContains: `sku: "SKU-A"`,
 		},
 	}
 

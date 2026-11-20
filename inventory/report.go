@@ -48,9 +48,8 @@ func GenerateReorderReport(items []Item) ([]ReorderReport, error) {
 		}
 	}
 
-	if len(badItems) > 0 && len(base) == 0 {
-		return nil, ErrNegativeStock
-	} else if len(badItems) > 0 {
+
+	if len(badItems) > 0 {
 		return nil, errors.Join(badItems...)
 	}
 
