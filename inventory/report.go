@@ -21,25 +21,25 @@ type ReorderReport struct {
 }
 
 var badItems []Item
+var ErrNegativeStock = errors.New("inventory: negative stock")
 
 func GenerateReorderReport(items []Item) ([]ReorderReport, error) {
 	var (
 		base     []ReorderReport
 		badItems []error
 	)
-	var NegativeError = errors.New("inventory: negative stock")
 
 	if len(items) == 0 {
 		return base, nil
 	}
 
 	for _, item := range items {
+		if item.CurrentStock < 0 || item.ReorderThreshold < 0 {
+			badItems = append(badItems, fmt.Errorf("%w: sku: %q (stock=%d, threshold=%d)",
+				ErrNegativeStock, item.SKU, item.CurrentStock, item.ReorderThreshold))
+			continue
+		}
 		if item.CurrentStock <= item.ReorderThreshold {
-			if item.CurrentStock < 0 {
-				badItems = append(badItems, fmt.Errorf("%w: sku: %q (stock=%d, threshold=%d)",
-					NegativeError, item.SKU, item.CurrentStock, item.ReorderThreshold))
-				continue
-			}
 			baseReport := ReorderReport{
 				Item: item}
 			baseReport.Shortfall = baseReport.Item.ReorderThreshold - baseReport.Item.CurrentStock
@@ -48,7 +48,9 @@ func GenerateReorderReport(items []Item) ([]ReorderReport, error) {
 		}
 	}
 
-	if len(badItems) > 0 {
+	if len(badItems) > 0 && len(base) == 0 {
+		return nil, ErrNegativeStock
+	} else if len(badItems) > 0 {
 		return nil, errors.Join(badItems...)
 	}
 
