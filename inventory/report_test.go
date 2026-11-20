@@ -3,6 +3,7 @@ package inventory
 import (
 	"errors"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -72,6 +73,9 @@ func TestGeneratedReorderReports(t *testing.T) {
 
 			if !errors.Is(err, tt.wantErr) {
 				t.Fatalf("error = %v, want %v", err, tt.wantErr)
+			}
+			if tt.wantErrContains != "" && !strings.Contains(err.Error(), tt.wantErrContains) {
+				t.Errorf("%q error should mention %q", err, tt.wantErrContains)
 			}
 			if !slices.Equal(got, tt.want) {
 				t.Errorf("got  %+v\nwant %+v", got, tt.want)
